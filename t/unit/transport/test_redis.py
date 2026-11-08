@@ -4886,6 +4886,24 @@ def test_transport_imports_when_redis_parent_module_was_evicted():
         kombu.transport.redis = saved_transport
 
 
+def test_redis_get_connection_flag_with_prerelease_version():
+    import kombu.transport
+    import redis as redis_py
+
+    saved_version = redis_py.VERSION
+    saved_transport = sys.modules['kombu.transport.redis']
+    try:
+        redis_py.VERSION = (5, 3, '0b5')
+        sys.modules.pop('kombu.transport.redis')
+        mod = importlib.import_module('kombu.transport.redis')
+        assert mod._REDIS_GET_CONNECTION_WITHOUT_ARGS is True
+    finally:
+        redis_py.VERSION = saved_version
+        sys.modules.pop('kombu.transport.redis', None)
+        sys.modules['kombu.transport.redis'] = saved_transport
+        kombu.transport.redis = saved_transport
+
+
 def test_import_without_packaging():
     # packaging is only in the redis extra; the transport must not need it.
     code = (
